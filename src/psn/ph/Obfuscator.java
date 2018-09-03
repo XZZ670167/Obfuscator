@@ -3,21 +3,23 @@ package psn.ph;
 import java.util.Random;
 
 public class Obfuscator {
-	private String ref = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+-*/,!\"?";
-	private int offset;
+	private static final String REFERENCE_STRING = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+-*/,!\"?";
 	private static final char WHITESPACE = ' ';
+	private Random random = new Random();
 
-	public String encode(String string, String offsetChar) {
+	protected String encode(String string, String offsetChar) {
 		StringBuilder sb = new StringBuilder();
 		if (string != null && offsetChar != null) {
-			this.offset = string.indexOf(offsetChar.toUpperCase());
+			int offset = REFERENCE_STRING.indexOf(offsetChar.toUpperCase());
 			sb.append(offsetChar);
 			int len = string.length();
+			String ref2 = REFERENCE_STRING.substring(REFERENCE_STRING.length() - offset) + REFERENCE_STRING.substring(0, REFERENCE_STRING.length() - offset);
 			for (int i = 0; i < len; i++) {
 				if (string.charAt(i) == WHITESPACE) {
 					sb.append(WHITESPACE);
 				} else {
-					sb.append(this.ref.charAt((this.ref.indexOf(string.charAt(i)) + this.offset) % this.ref.length()));
+					int n1 = REFERENCE_STRING.indexOf(string.charAt(i));
+					sb.append(ref2.charAt(n1));
 				}
 			}
 		}
@@ -25,37 +27,26 @@ public class Obfuscator {
 	}
 
 	public String encode(String string) {
-		Random random = new Random();
-		int rand = random.nextInt() % this.ref.length();
-		return this.encode(string, this.ref.substring(rand, rand + 1));
+		int rand = Math.abs(random.nextInt()) % REFERENCE_STRING.length();
+		return encode(string, Character.toString(REFERENCE_STRING.charAt(rand)));
 	}
 
 	public String decode(String string) {
 		StringBuilder sb = new StringBuilder();
 		if (string != null) {
 			char offsetChar = string.charAt(0);
-			this.offset = string.indexOf(offsetChar) + 1;
+			int offset = REFERENCE_STRING.indexOf(offsetChar);
+			String ref2 = REFERENCE_STRING.substring(REFERENCE_STRING.length() - offset) + REFERENCE_STRING.substring(0, REFERENCE_STRING.length() - offset);
 			int len = string.length();
 			for (int i = 1; i < len; i++) {
 				if (string.charAt(i) == WHITESPACE) {
 					sb.append(WHITESPACE);
 				} else {
-					sb.append(this.ref.charAt((this.ref.indexOf(string.charAt(i)) + this.offset) % this.ref.length()));
+					int n1 = ref2.indexOf(string.charAt(i));
+					sb.append(REFERENCE_STRING.charAt(n1));
 				}
 			}
 		}
 		return sb.toString();
-	}
-
-	public static void main(String[] args) {
-		Obfuscator me = new Obfuscator();
-		String s = me.encode("HELLO WORLD", "B");
-		System.out.println(s);
-		s = me.decode(s);
-		System.out.println(s);
-		s = me.encode("HELLO WORLD");
-		System.out.println(s);
-		s = me.decode(s);
-		System.out.println(s);
 	}
 }
